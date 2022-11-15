@@ -52,7 +52,7 @@ pipeline {
 
                 RELEASE_ARG=
                 if [ "$RELEASE_BUILD" = true ]; then
-                  RELEASE_ARG="--build-arg RELEASE_TARBALL=$RELEASE_TARBALL"
+                  RELEASE_ARG="--build-arg RELEASE_TARBALL=1"
                 fi
 
                 BUILDKIT_PROGRESS=plain docker buildx build . \
