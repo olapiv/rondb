@@ -41,10 +41,11 @@ pipeline {
                 source ./MYSQL_VERSION
                 RONDB_VERSION="$MYSQL_VERSION_MAJOR.$MYSQL_VERSION_MINOR.$MYSQL_VERSION_PATCH"
 
-                sed -i "s/___CE_USER___/$HopsCECeds_USR/g" deploy.sh
-                sed -i "s/___CE_PASS___/$HopsCECeds_PSW/g" deploy.sh
-                sed -i "s/___EE_USER___/$HopsEECeds_USR/g" deploy.sh
-                sed -i "s/___EE_PASS___/$HopsEECeds_PSW/g" deploy.sh
+                DEPLOY_SCRIPT="./build_scripts/release_scripts/deploy.sh"
+                sed -i "s/___CE_USER___/$HopsCECeds_USR/g" $DEPLOY_SCRIPT
+                sed -i "s/___CE_PASS___/$HopsCECeds_PSW/g" $DEPLOY_SCRIPT
+                sed -i "s/___EE_USER___/$HopsEECeds_USR/g" $DEPLOY_SCRIPT
+                sed -i "s/___EE_PASS___/$HopsEECeds_PSW/g" $DEPLOY_SCRIPT
 
                 cat $RepoCeds > id_rsa
                 chmod 600 id_rsa
