@@ -55,6 +55,10 @@ pipeline {
                   RELEASE_ARG="--build-arg RELEASE_TARBALL=1"
                 fi
 
+                # We need this because the SSH key in id_rsa is bound to the UID/GID
+                USERID=`id -u`
+                GROUPID=`id -g`
+
                 export DOCKER_CLI_EXPERIMENTAL=enabled
                 export BUILDKIT_PROGRESS=plain
                 docker buildx build . \
@@ -64,6 +68,8 @@ pipeline {
                   --no-cache \
                   --build-arg BUILD_THREADS=$BUILD_CORES \
                   --build-arg DEPLOY_TO_REPO=1 \
+                  --build-arg UID=$USERID \
+                  --build-arg GID=$GROUPID \
                   $RELEASE_ARG
               '''
             }
