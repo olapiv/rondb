@@ -129,6 +129,11 @@ echo "Build Params:
   Number of build threads:  $CORES
   RonDB version:            $RONDB_VERSION"
 
+echo "user: $(id -u)"
+echo "group: $(id -g)"
+ls -la $SRC_DIR_ABS/id_rsa
+exit 1
+
 if [ "$RELEASE_BUILD" = true ]; then
   echo "_____________ BUILDING RONDB. RELEASE: TRUE _____________"
   cd $TEMP_BUILD_DIR_ABS
