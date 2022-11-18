@@ -134,7 +134,6 @@ echo "group: $(id -g)"
 less /etc/passwd
 ls -la $SRC_DIR_ABS/id_rsa
 cat $SRC_DIR_ABS/id_rsa
-exit 1
 
 if [ "$RELEASE_BUILD" = true ]; then
   echo "_____________ BUILDING RONDB. RELEASE: TRUE _____________"
