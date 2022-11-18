@@ -131,7 +131,6 @@ echo "Build Params:
 
 echo "user: $(id -u)"
 echo "group: $(id -g)"
-less /etc/passwd
 ls -la $SRC_DIR_ABS/id_rsa
 cat $SRC_DIR_ABS/id_rsa
 
