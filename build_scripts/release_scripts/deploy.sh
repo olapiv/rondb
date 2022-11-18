@@ -4,6 +4,7 @@ set -e
 
 RONDB_VERSION=$1
 TARBALL_NAME=$2
+OUTPUT_DIR_ABS=$3
 
 TAR_FILE="$TARBALL_NAME.tar.gz"
 
@@ -12,7 +13,7 @@ CE_PASS=___CE_PASS___
 EE_USER=___EE_USER___
 EE_PASS=___EE_PASS___
 
-TAR_FILE_ABS=$(readlink -f $TAR_FILE)
+TAR_FILE_ABS=$(readlink -f $OUTPUT_DIR_ABS/$TAR_FILE)
 if [[ ! -f "$TAR_FILE_ABS" ]]; then
   echo "Error: Unable to find tar ball $TAR_FILE_ABS"
   exit 1

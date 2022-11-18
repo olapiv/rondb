@@ -129,11 +129,6 @@ echo "Build Params:
   Number of build threads:  $CORES
   RonDB version:            $RONDB_VERSION"
 
-echo "user: $(id -u)"
-echo "group: $(id -g)"
-ls -la $SRC_DIR_ABS/id_rsa
-cat $SRC_DIR_ABS/id_rsa
-
 if [ "$RELEASE_BUILD" = true ]; then
   echo "_____________ BUILDING RONDB. RELEASE: TRUE _____________"
   cd $TEMP_BUILD_DIR_ABS
@@ -166,8 +161,8 @@ source $SRC_DIR_ABS/build_scripts/release_scripts/get_tarball_name.sh
 set +e
 TAR_OUTPUT=$(get_tarball_name $RONDB_VERSION)
 if [ $? -ne 0 ]; then
-    echo $TAR_OUTPUT
-    exit 1
+  echo $TAR_OUTPUT
+  exit 1
 fi
 set -e
 TARBALL_NAME=$(echo "$TAR_OUTPUT" | tail -1)
@@ -181,5 +176,5 @@ if [ "$DEPLOY" = true ]; then
   cp $SRC_DIR_ABS/id_rsa $TEMP_BUILD_DIR_ABS
   cd $TEMP_BUILD_DIR_ABS
   chmod 600 id_rsa
-  $SRC_DIR_ABS/build_scripts/release_scripts/deploy.sh $RONDB_VERSION $TARBALL_NAME
+  $SRC_DIR_ABS/build_scripts/release_scripts/deploy.sh $RONDB_VERSION $TARBALL_NAME $OUTPUT_DIR_ABS
 fi
