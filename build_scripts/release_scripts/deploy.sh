@@ -20,7 +20,7 @@ if [[ ! -f "$TAR_FILE_ABS" ]]; then
   exit 1
 fi
 
-DST="repo@repo.hops.works:/opt/repository/dev/vincent.l/$TAR_FILE"
+DST="repo@repo.hops.works:/tmp/$TAR_FILE"
 echo "Copying: $TAR_FILE_ABS to $DST"
 scp -vvv -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ABS_PATH_RSA_KEY $TAR_FILE_ABS $DST
 
