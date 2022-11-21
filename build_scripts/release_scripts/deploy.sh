@@ -5,6 +5,7 @@ set -e
 RONDB_VERSION=$1
 TARBALL_NAME=$2
 OUTPUT_DIR_ABS=$3
+ABS_PATH_RSA_KEY=$4
 
 TAR_FILE="$TARBALL_NAME.tar.gz"
 
@@ -21,7 +22,7 @@ fi
 
 DST="repo@repo.hops.works:/opt/repository/dev/vincent.l/$TAR_FILE"
 echo "Copying: $TAR_FILE_ABS to $DST"
-scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ./id_rsa $TAR_FILE_ABS $DST
+scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ABS_PATH_RSA_KEY $TAR_FILE_ABS $DST
 
 # will return x86_64 on Ubuntu, Oraclelinux7 & Mac
 CPU_ARCH=$(uname -m)

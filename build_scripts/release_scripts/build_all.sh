@@ -173,8 +173,6 @@ $SRC_DIR_ABS/build_scripts/release_scripts/create_rondb_tarball.sh $TARBALL_NAME
 
 if [ "$DEPLOY" = true ]; then
   echo "_____________ DEPLOYING TARBALL _____________"
-  cp $SRC_DIR_ABS/id_rsa $TEMP_BUILD_DIR_ABS
   cd $TEMP_BUILD_DIR_ABS
-  chmod 600 id_rsa
-  $SRC_DIR_ABS/build_scripts/release_scripts/deploy.sh $RONDB_VERSION $TARBALL_NAME $OUTPUT_DIR_ABS
+  $SRC_DIR_ABS/build_scripts/release_scripts/deploy.sh $RONDB_VERSION $TARBALL_NAME $OUTPUT_DIR_ABS $SRC_DIR_ABS/id_rsa
 fi
