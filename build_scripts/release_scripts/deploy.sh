@@ -22,7 +22,7 @@ fi
 
 DST="repo@repo.hops.works:/opt/repository/dev/vincent.l/$TAR_FILE"
 echo "Copying: $TAR_FILE_ABS to $DST"
-scp -o -vvv StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ABS_PATH_RSA_KEY $TAR_FILE_ABS $DST
+scp -vvv -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i $ABS_PATH_RSA_KEY $TAR_FILE_ABS $DST
 
 # will return x86_64 on Ubuntu, Oraclelinux7 & Mac
 CPU_ARCH=$(uname -m)
