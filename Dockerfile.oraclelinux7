@@ -53,8 +53,6 @@ RUN --mount=type=cache,target=/var/cache/yum,id=oracle7-yum \
     && yum-config-manager -y --enable "ol7_optional_latest" \
     && yum -y install devtoolset-9 maven
 
-RUN java -version
-RUN mvn -version
 
 # Creating a cache dir for downloads to avoid redownloading
 ENV DOWNLOADS_CACHE_DIR=/tmp/downloads
