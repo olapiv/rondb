@@ -107,7 +107,7 @@ RUN --mount=type=cache,target=$DOWNLOADS_CACHE_DIR \
     && cd .. \
     && rm -r cmake-${CMAKE_VERSION}
 
-WORKDIR /home
+WORKDIR /root
 
 RUN echo "source scl_source enable devtoolset-9" >> .bashrc
 
