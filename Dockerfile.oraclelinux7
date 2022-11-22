@@ -46,9 +46,15 @@ RUN --mount=type=cache,target=/var/cache/yum,id=oracle7-yum \
     numactl numactl-libs numactl-devel \
     patchelf ncurses-devel java-1.8.0-openjdk-devel automake \
     zlib-devel scl-utils oracle-softwarecollection-release-el7 \
-    golang maven vim pigz \
+    golang vim pigz
+
+RUN --mount=type=cache,target=/var/cache/yum,id=oracle7-yum \
+    yum -y update \
     && yum-config-manager -y --enable "ol7_optional_latest" \
-    && yum -y install devtoolset-9
+    && yum -y install devtoolset-9 maven
+
+RUN java -version
+RUN mvn -version
 
 # Creating a cache dir for downloads to avoid redownloading
 ENV DOWNLOADS_CACHE_DIR=/tmp/downloads
