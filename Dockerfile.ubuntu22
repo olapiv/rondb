@@ -89,12 +89,12 @@ RUN --mount=type=cache,target=$DOWNLOADS_CACHE_DIR \
     && cd .. \
     && rm -r cmake-$CMAKE_VERSION
 
-WORKDIR /home
+WORKDIR /root
 
 # For the deployment of Java artifacts to the Maven repository
 # This is not needed by default, since we already deploy JAR files
 # for x86 and they do not change across architectures.
-COPY <<-"EOF" .m2/settings.xml
+COPY <<-"EOF" /root/.m2/settings.xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">

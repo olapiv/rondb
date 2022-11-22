@@ -109,10 +109,10 @@ RUN --mount=type=cache,target=$DOWNLOADS_CACHE_DIR \
 
 WORKDIR /root
 
-RUN echo "source scl_source enable devtoolset-9" >> .bashrc
+RUN echo "source scl_source enable devtoolset-9" >> /root/.bashrc
 
 # For the deployment of Java artifacts to the Maven repository
-COPY <<-"EOF" .m2/settings.xml
+COPY <<-"EOF" /root/.m2/settings.xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
