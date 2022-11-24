@@ -5,7 +5,7 @@ pipeline {
         }
     }
     parameters{
-      choice(name: 'BRANCH', choices: ['21.04', '21.04.7', '22.10'], description: 'RonDB branch to build.')
+      choice(name: 'BRANCH', choices: ['testing2210'], description: 'RonDB branch to build.')
       choice(name: 'BUILD_CORES', choices: ['8', '1', '16', '24', '32', '48'],  description: 'No of build threads. This is passed to make -j. Note jenkins machine is shared with other build process.')
       booleanParam(name: 'RELEASE_BUILD', defaultValue: true, description: 'Enable this for release build. It uses PGO (profile guided optimization) and it take ~ 3 hrs to build')
     }
@@ -32,7 +32,7 @@ pipeline {
               sh '''
                 echo "Cloning RonDB Branch ${BRANCH}"  
                 cd ${WORKSPACE}
-                git clone --depth=1 --branch ${BRANCH} https://github.com/logicalclocks/rondb
+                git clone --depth=1 --branch ${BRANCH} https://github.com/olapiv/rondb
               '''
             }
         }
