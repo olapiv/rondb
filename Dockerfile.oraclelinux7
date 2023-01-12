@@ -17,7 +17,7 @@ ARG BOOST_VERSION_PATCH=0
 ARG BUILD_THREADS
 ENV THREADS_ARG=${BUILD_THREADS:-1}
 
-# RonDB 22.10 requires gcc/g++ 9/10 for amd64/arm64 respectively.
+# RonDB 22.10 requires gcc/g++ 9 for amd64
 # We will not remove the default installation, but change the default
 # one using software collections (scl).
 # To use the required version, the command

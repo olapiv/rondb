@@ -23,16 +23,16 @@ RUN --mount=type=cache,target=/var/cache/apt,id=ubuntu22-apt \
     libncurses5-dev default-jdk bison golang-go autoconf pigz \
     openssh-client maven
 
-# RonDB 22.10 requires gcc/g++ 9
-# Ubuntu 22.04 comes with gcc/g++ 11.3 by default
-# We will not remove the default installation, but change the default
-# one using `update-alternatives`
+# Ubuntu 22.04 comes with gcc/g++ 11.3 by default, which is what we use here.
+# To use another gcc/g++ version, such as gcc/g++-9, uncomment the following code.
+# It does not remove the current installation, but change the default
+# using `update-alternatives`
 # See https://askubuntu.com/a/26518/1646182 for reference
-RUN --mount=type=cache,target=/var/cache/apt,id=ubuntu22-apt \
-    --mount=type=cache,target=/var/lib/apt/lists,id=ubuntu22-apt-lists \
-    apt-get update && apt-get install -y gcc-9 g++-9 \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 10
+# RUN --mount=type=cache,target=/var/cache/apt,id=ubuntu22-apt \
+#     --mount=type=cache,target=/var/lib/apt/lists,id=ubuntu22-apt-lists \
+#     apt-get update && apt-get install -y gcc-9 g++-9 \
+#     && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10 \
+#     && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 10
 
 # Creating a cache dir for downloads to avoid redownloading
 ENV DOWNLOADS_CACHE_DIR=/tmp/downloads
