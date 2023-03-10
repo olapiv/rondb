@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
+	"go.uber.org/zap/zaptest"
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/dal"
-	"hopsworks.ai/rdrs/internal/log"
 	"hopsworks.ai/rdrs/internal/security/apikey/authcache"
 	"hopsworks.ai/rdrs/internal/testutils"
 	"hopsworks.ai/rdrs/resources/testdbs"
@@ -33,21 +33,22 @@ func TestAPIKey(t *testing.T) {
 		t.Skip("skipping test without RonDB")
 	}
 
+	log := zaptest.NewLogger(t)
+
 	conf := config.GetAll()
 	if !conf.Security.UseHopsworksAPIKeys {
 		t.Log("tests may fail because Hopsworks API keys are deactivated")
 	}
-	log.InitLogger(conf.Log)
 
 	connectString := config.GenerateMgmdConnectString(conf)
-	dalErr := dal.InitRonDBConnection(connectString, true)
+	dalErr := dal.InitRonDBConnection(log, connectString, true)
 	if dalErr != nil {
 		t.Fatalf("failed to initialise RonDB connection; error: %s", dalErr.VerboseError())
 	}
-	defer dal.ShutdownConnection()
+	defer dal.ShutdownConnection(log)
 
 	databases := []string{testdbs.DB001, testdbs.DB002}
-	err, dropDatabases := testutils.CreateDatabases(true, databases...)
+	err, dropDatabases := testutils.CreateDatabases(log, true, databases...)
 	if err != nil {
 		t.Fatalf("failed creating databases %v; error: %v ", databases, err)
 	}
@@ -103,22 +104,24 @@ func TestAPIKeyCache1(t *testing.T) {
 		t.Skip("skipping test without RonDB")
 	}
 
+	log := zaptest.NewLogger(t)
+
 	conf := config.GetAll()
 	if !conf.Security.UseHopsworksAPIKeys {
-		t.Log("tests may fail because Hopsworks API keys are deactivated")
+		log.Warn("tests may fail because Hopsworks API keys are deactivated")
 	}
 
 	connectString := config.GenerateMgmdConnectString(conf)
-	dalErr := dal.InitRonDBConnection(connectString, true)
+	dalErr := dal.InitRonDBConnection(log, connectString, true)
 	if dalErr != nil {
 		t.Fatalf("failed to initialise RonDB connection; error: %s", dalErr.VerboseError())
 	}
-	defer dal.ShutdownConnection()
+	defer dal.ShutdownConnection(log)
 
 	apiKey := testutils.HOPSWORKS_TEST_API_KEY
 	databases := []string{testdbs.DB001, testdbs.DB002}
 
-	err, dropDatabases := testutils.CreateDatabases(true, databases...)
+	err, dropDatabases := testutils.CreateDatabases(log, true, databases...)
 	if err != nil {
 		t.Fatalf("failed creating databases %v; error: %v ", databases, err)
 	}
@@ -166,17 +169,19 @@ func TestAPIKeyCache2(t *testing.T) {
 		t.Log("tests may fail because Hopsworks API keys are deactivated")
 	}
 
+	log := zaptest.NewLogger(t)
+
 	connectString := config.GenerateMgmdConnectString(conf)
-	dalErr := dal.InitRonDBConnection(connectString, true)
+	dalErr := dal.InitRonDBConnection(log, connectString, true)
 	if dalErr != nil {
 		t.Fatalf("failed to initialise RonDB connection; error: %s", dalErr.VerboseError())
 	}
-	defer dal.ShutdownConnection()
+	defer dal.ShutdownConnection(log)
 
 	databases := []string{testdbs.DB001, testdbs.DB002}
 	apiKey := testutils.HOPSWORKS_TEST_API_KEY
 
-	err, dropDatabases := testutils.CreateDatabases(true, databases...)
+	err, dropDatabases := testutils.CreateDatabases(log, true, databases...)
 	if err != nil {
 		t.Fatalf("failed creating databases %v; error: %v ", databases, err)
 	}

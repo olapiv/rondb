@@ -16,8 +16,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"go.uber.org/zap"
 	"hopsworks.ai/rdrs/internal/config"
-	"hopsworks.ai/rdrs/internal/log"
 )
 
 var ipAddresses []net.IP
@@ -32,7 +32,7 @@ func init() {
 	Create and save both client and server TLS certificates and also saves
 	them to configuration.
 */
-func CreateAllTLSCerts() (cleanup func(), err error) {
+func CreateAllTLSCerts(log *zap.Logger) (cleanup func(), err error) {
 	cleanup = func() {}
 
 	certsDir := filepath.Join(os.TempDir(), "certs-for-unit-testing")

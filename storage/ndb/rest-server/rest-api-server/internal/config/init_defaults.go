@@ -20,8 +20,6 @@ package config
 import (
 	"os"
 	"sync"
-
-	"hopsworks.ai/rdrs/internal/log"
 )
 
 var globalConfig AllConfigs
@@ -86,7 +84,7 @@ func newWithDefaults() AllConfigs {
 			UseHopsworksAPIKeys:              true,
 			HopsworksAPIKeysCacheValiditySec: 3,
 		},
-		Log: log.LogConfig{
+		Log: LogConfig{
 			Level:      "warn",
 			FilePath:   "",
 			MaxSizeMB:  100,

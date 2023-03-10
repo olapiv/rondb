@@ -25,6 +25,7 @@ import (
 	"runtime"
 	"syscall"
 
+	"go.uber.org/zap"
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/dal/heap"
 	"hopsworks.ai/rdrs/internal/log"
@@ -48,11 +49,19 @@ func main() {
 	}
 	conf := config.GetAll()
 
-	log.InitLogger(conf.Log)
-	log.Infof("Current configuration: %s", conf)
-	log.Infof("Starting Version : %s, Git Branch: %s (%s). Built on %s at %s",
+	logger, err := log.SetupLogger(conf)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	replace := zap.ReplaceGlobals(logger)
+	defer logger.Sync()
+	defer replace()
+
+	logger.Sugar().Infof("Current configuration: %s", conf)
+	logger.Sugar().Infof("Starting Version : %s, Git Branch: %s (%s). Built on %s at %s",
 		version.VERSION, version.BRANCH, version.GITCOMMIT, version.BUILDTIME, version.HOSTNAME)
-	log.Infof("Starting API Version : %s", version.API_VERSION)
+	logger.Sugar().Infof("Starting API Version : %s", version.API_VERSION)
 
 	runtime.GOMAXPROCS(conf.Internal.GOMAXPROCS)
 
@@ -65,7 +74,7 @@ func main() {
 	}
 	defer releaseBuffers()
 
-	err, cleanupServers := servers.CreateAndStartDefaultServers(newHeap, quit)
+	err, cleanupServers := servers.CreateAndStartDefaultServers(logger, newHeap, quit)
 	if err != nil {
 		panic(err)
 	}
@@ -78,5 +87,5 @@ func main() {
 	*/
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Info("Shutting down server...")
+	logger.Sugar().Infof("Shutting down server...")
 }

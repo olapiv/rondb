@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"hopsworks.ai/rdrs/internal/log"
 )
 
 type Internal struct {
@@ -144,6 +142,14 @@ func (c Security) Validate() error {
 	return nil
 }
 
+type LogConfig struct {
+	Level      string
+	FilePath   string
+	MaxSizeMB  int
+	MaxBackups int
+	MaxAge     int
+}
+
 /*
 	The RDRS is tested on a regular basis by RonDB's MTR tests. These MTR tests
 	have a config file defined for the RDRS in `mysql-test/suite/rdrs/include/have_rdrs.inc`.
@@ -158,7 +164,7 @@ type AllConfigs struct {
 	RonDB    RonDB
 	MySQL    MySQL
 	Security Security
-	Log      log.LogConfig
+	Log      LogConfig
 }
 
 func (c AllConfigs) Validate() error {

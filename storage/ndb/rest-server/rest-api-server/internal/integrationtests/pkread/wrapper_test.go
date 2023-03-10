@@ -8,7 +8,6 @@ import (
 
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/integrationtests"
-	"hopsworks.ai/rdrs/internal/log"
 )
 
 /*
@@ -27,11 +26,11 @@ func TestMain(m *testing.M) {
 	}()
 
 	conf := config.GetAll()
-	log.InitLogger(conf.Log)
-
 	cleanup, err := integrationtests.InitialiseTesting(conf)
 	if err != nil {
-		log.Fatalf(err.Error())
+		fmt.Print(err.Error())
+		retcode = 1
+		return
 	}
 	defer cleanup()
 

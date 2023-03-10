@@ -27,10 +27,10 @@ import (
 	"net/http"
 	"unsafe"
 
-	"hopsworks.ai/rdrs/internal/log"
+	"go.uber.org/zap"
 )
 
-func InitRonDBConnection(connStr string, find_available_node_id bool) *DalError {
+func InitRonDBConnection(log *zap.Logger, connStr string, find_available_node_id bool) *DalError {
 	log.Info("Initialising RonDB connection")
 	cs := C.CString(connStr)
 	defer C.free(unsafe.Pointer(cs))
@@ -43,7 +43,7 @@ func InitRonDBConnection(connStr string, find_available_node_id bool) *DalError 
 	return nil
 }
 
-func ShutdownConnection() *DalError {
+func ShutdownConnection(log *zap.Logger) *DalError {
 	log.Info("Shutting down RonDB connection")
 	ret := C.shutdown_connection()
 

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 
+	"go.uber.org/zap"
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/dal"
 	"hopsworks.ai/rdrs/internal/dal/heap"
-	"hopsworks.ai/rdrs/internal/log"
 
 	"hopsworks.ai/rdrs/internal/security/apikey/authcache"
 	"hopsworks.ai/rdrs/internal/security/tlsutils"
@@ -16,18 +16,18 @@ import (
 	"hopsworks.ai/rdrs/internal/servers/rest"
 )
 
-func CreateAndStartDefaultServers(heap *heap.Heap, quit chan os.Signal) (err error, cleanup func()) {
+func CreateAndStartDefaultServers(log *zap.Logger, heap *heap.Heap, quit chan os.Signal) (err error, cleanup func()) {
 	cleanup = func() {}
 
 	// Connect to RonDB
 	conf := config.GetAll()
 	connectString := config.GenerateMgmdConnectString(conf)
-	dalErr := dal.InitRonDBConnection(connectString, true)
+	dalErr := dal.InitRonDBConnection(log, connectString, true)
 	if dalErr != nil {
 		return fmt.Errorf("failed creating RonDB connection; error: %w", dalErr), cleanup
 	}
 	cleanupRonDB := func() {
-		dalErr = dal.ShutdownConnection()
+		dalErr = dal.ShutdownConnection(log)
 		if dalErr != nil {
 			log.Error(dalErr.Error())
 		}
@@ -47,8 +47,9 @@ func CreateAndStartDefaultServers(heap *heap.Heap, quit chan os.Signal) (err err
 		}
 	}
 
-	grpcServer := grpc.New(tlsConfig, heap)
+	grpcServer := grpc.New(log, tlsConfig, heap)
 	err, cleanupGrpc := grpc.Start(
+		log,
 		grpcServer,
 		conf.GRPC.ServerIP,
 		conf.GRPC.ServerPort,
@@ -60,6 +61,7 @@ func CreateAndStartDefaultServers(heap *heap.Heap, quit chan os.Signal) (err err
 	}
 
 	restServer := rest.New(
+		log,
 		conf.REST.ServerIP,
 		conf.REST.ServerPort,
 		tlsConfig,

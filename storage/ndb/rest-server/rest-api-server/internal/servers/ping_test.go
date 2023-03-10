@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
+	"go.uber.org/zap/zaptest"
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/dal/heap"
-	"hopsworks.ai/rdrs/internal/log"
 	"hopsworks.ai/rdrs/internal/testutils"
 	"hopsworks.ai/rdrs/pkg/api"
 )
@@ -18,14 +18,15 @@ import (
 	our servers are up and running.
 */
 func TestPing(t *testing.T) {
+	log := zaptest.NewLogger(t)
+
 	conf := config.GetAll()
-	log.InitLogger(conf.Log)
 
 	cleanupTLSCerts := func() {}
 	var err error
 	if conf.Security.EnableTLS {
 		// The server will need this when starting up
-		cleanupTLSCerts, err = testutils.CreateAllTLSCerts()
+		cleanupTLSCerts, err = testutils.CreateAllTLSCerts(log)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -39,7 +40,7 @@ func TestPing(t *testing.T) {
 	defer releaseBuffers()
 
 	quit := make(chan os.Signal)
-	err, cleanupServers := CreateAndStartDefaultServers(newHeap, quit)
+	err, cleanupServers := CreateAndStartDefaultServers(log, newHeap, quit)
 	if err != nil {
 		t.Fatal(err)
 	}

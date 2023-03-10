@@ -22,6 +22,8 @@ import (
 	"testing"
 
 	// _ "github.com/ianlancetaylor/cgosymbolizer"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"hopsworks.ai/rdrs/internal/common"
 	"hopsworks.ai/rdrs/internal/integrationtests"
 	"hopsworks.ai/rdrs/pkg/api"
@@ -31,6 +33,7 @@ import (
 // INT TESTS
 // Test signed and unsigned int data type
 func TestDataTypesInt(t *testing.T) {
+	log := zaptest.NewLogger(t)
 	testTable := "int_table"
 	testDb := testdbs.DB004
 	validateColumns := []interface{}{"col0", "col1"}
@@ -165,11 +168,11 @@ func TestDataTypesInt(t *testing.T) {
 		},
 	}
 
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesBigInt(t *testing.T) {
-
+	log := zaptest.NewLogger(t)
 	testTable := "bigint_table"
 	testDb := testdbs.DB005
 
@@ -263,10 +266,11 @@ func TestDataTypesBigInt(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesTinyInt(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	testTable := "tinyint_table"
 	testDb := testdbs.DB006
@@ -360,10 +364,11 @@ func TestDataTypesTinyInt(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesSmallInt(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	testTable := "smallint_table"
 	testDb := testdbs.DB007
@@ -457,10 +462,11 @@ func TestDataTypesSmallInt(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesMediumInt(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	testTable := "mediumint_table"
 	testDb := testdbs.DB008
@@ -554,10 +560,11 @@ func TestDataTypesMediumInt(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesFloat(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	// testTable := "float_table"
 	testDb := testdbs.DB009
@@ -613,10 +620,11 @@ func TestDataTypesFloat(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesDouble(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	// testTable := "float_table"
 	testDb := testdbs.DB010
@@ -672,10 +680,11 @@ func TestDataTypesDouble(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesDecimal(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	testTable := "decimal_table"
 	testDb := testdbs.DB011
@@ -733,14 +742,14 @@ func TestDataTypesDecimal(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesBlobs(t *testing.T) {
+	log := zaptest.NewLogger(t)
 
 	testDb := testdbs.DB013
 	tests := map[string]api.PKTestInfo{
-
 		"blob1": {
 			PkReq: api.PKReadBody{
 				Filters:     integrationtests.NewFiltersKVs("id0", "1"),
@@ -794,34 +803,40 @@ func TestDataTypesBlobs(t *testing.T) {
 		},
 	}
 
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesChar(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB012, false, 100, true)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB012, false, 100, true)
 }
 
 func TestDataTypesVarchar(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB014, false, 50, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB014, false, 50, false)
 }
 
 func TestDataTypesLongVarchar(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB015, false, 256, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB015, false, 256, false)
 }
 
 func TestDataTypesBinary(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB016, true, 100, true)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB016, true, 100, true)
 }
 
 func TestDataTypesVarbinary(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB017, true, 100, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB017, true, 100, false)
 }
 
 func TestDataTypesLongVarbinary(t *testing.T) {
-	ArrayColumnTest(t, "table1", testdbs.DB018, true, 256, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnTest(t, log, "table1", testdbs.DB018, true, 256, false)
 }
 
-func ArrayColumnTest(t *testing.T, table string, database string, isBinary bool, colWidth int, padding bool) {
+func ArrayColumnTest(t *testing.T, log *zap.Logger, table string, database string, isBinary bool, colWidth int, padding bool) {
 	t.Helper()
 	testTable := table
 	testDb := database
@@ -959,11 +974,13 @@ func ArrayColumnTest(t *testing.T, table string, database string, isBinary bool,
 		},
 	}
 
-	integrationtests.PkTest(t, tests, isBinary)
+	integrationtests.PkTest(t, log, tests, isBinary)
 }
 
 func TestDataTypesDateColumn(t *testing.T) {
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testTable := "date_table"
 	testDb := testdbs.DB019
 	validateColumns := []interface{}{"col0"}
@@ -1047,11 +1064,13 @@ func TestDataTypesDateColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesDatetimeColumn(t *testing.T) {
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testDb := testdbs.DB020
 	validateColumns := []interface{}{"col0"}
 	tests := map[string]api.PKTestInfo{
@@ -1182,11 +1201,13 @@ func TestDataTypesDatetimeColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesTimeColumn(t *testing.T) {
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testDb := testdbs.DB021
 	validateColumns := []interface{}{"col0"}
 	tests := map[string]api.PKTestInfo{
@@ -1304,11 +1325,13 @@ func TestDataTypesTimeColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesTimestampColumn(t *testing.T) {
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testDb := testdbs.DB022
 	validateColumns := []interface{}{"col0"}
 	tests := map[string]api.PKTestInfo{
@@ -1478,12 +1501,14 @@ func TestDataTypesTimestampColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesYearColumn(t *testing.T) {
 	///< Year 1901-2155 (1 byte)
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testDb := testdbs.DB023
 	testTable := "year_table"
 	validateColumns := []interface{}{"col0"}
@@ -1567,11 +1592,13 @@ func TestDataTypesYearColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, false)
+	integrationtests.PkTest(t, log, tests, false)
 }
 
 func TestDataTypesBitColumn(t *testing.T) {
 	t.Helper()
+	log := zaptest.NewLogger(t)
+
 	testDb := testdbs.DB024
 	testTable := "bit_table"
 	validateColumns := []interface{}{"col0"}
@@ -1614,5 +1641,5 @@ func TestDataTypesBitColumn(t *testing.T) {
 			RespKVs:        validateColumns,
 		},
 	}
-	integrationtests.PkTest(t, tests, true)
+	integrationtests.PkTest(t, log, tests, true)
 }

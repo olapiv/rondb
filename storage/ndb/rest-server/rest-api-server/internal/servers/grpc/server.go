@@ -24,6 +24,7 @@ import (
 	"os"
 	"syscall"
 
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
@@ -34,23 +35,23 @@ import (
 	"hopsworks.ai/rdrs/internal/handlers/batchpkread"
 	"hopsworks.ai/rdrs/internal/handlers/pkread"
 	"hopsworks.ai/rdrs/internal/handlers/stat"
-	"hopsworks.ai/rdrs/internal/log"
 	"hopsworks.ai/rdrs/pkg/api"
 )
 
-func New(serverTLS *tls.Config, heap *heap.Heap) *grpc.Server {
+func New(log *zap.Logger, serverTLS *tls.Config, heap *heap.Heap) *grpc.Server {
 	var grpcServer *grpc.Server
 	if serverTLS != nil {
 		grpcServer = grpc.NewServer(grpc.Creds(credentials.NewTLS(serverTLS)))
 	} else {
 		grpcServer = grpc.NewServer()
 	}
-	RonDBServer := NewRonDBServer(heap)
+	RonDBServer := NewRonDBServer(log, heap)
 	api.RegisterRonDBRESTServer(grpcServer, RonDBServer)
 	return grpcServer
 }
 
 func Start(
+	log *zap.Logger,
 	grpcServer *grpc.Server,
 	host string,
 	port uint16,
@@ -61,11 +62,11 @@ func Start(
 	if err != nil {
 		return fmt.Errorf("failed listening to gRPC server address '%s'; error: %v", grpcAddress, err), func() {}
 	}
-	log.Infof("Listening at %s for gRPC server", grpcListener.Addr())
+	log.Sugar().Infof("Listening at %s for gRPC server", grpcListener.Addr())
 	go func() {
 		log.Info("Starting up gRPC server")
 		if err := grpcServer.Serve(grpcListener); err != nil {
-			log.Errorf("failed to serve gRPC; error: %v", err)
+			log.Sugar().Errorf("failed to serve gRPC; error: %v", err)
 			quit <- syscall.SIGINT
 		}
 	}()
@@ -78,13 +79,15 @@ func Start(
 // TODO: Add thread-safe logger here
 type RonDBServer struct {
 	api.UnimplementedRonDBRESTServer
+	log                *zap.Logger
 	statsHandler       stat.Handler
 	pkReadHandler      pkread.Handler
 	batchPkReadHandler batchpkread.Handler
 }
 
-func NewRonDBServer(heap *heap.Heap) *RonDBServer {
+func NewRonDBServer(log *zap.Logger, heap *heap.Heap) *RonDBServer {
 	return &RonDBServer{
+		log:                log,
 		statsHandler:       stat.New(heap),
 		pkReadHandler:      pkread.New(heap),
 		batchPkReadHandler: batchpkread.New(heap),

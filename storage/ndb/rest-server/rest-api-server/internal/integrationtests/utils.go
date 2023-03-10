@@ -31,10 +31,10 @@ import (
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/status"
 	"hopsworks.ai/rdrs/internal/common"
 	"hopsworks.ai/rdrs/internal/config"
-	"hopsworks.ai/rdrs/internal/log"
 	"hopsworks.ai/rdrs/internal/testutils"
 	"hopsworks.ai/rdrs/pkg/api"
 )
@@ -96,7 +96,7 @@ func SendHttpRequest(
 	return respCode, respBody
 }
 
-func ValidateResHttp(t testing.TB, testInfo api.PKTestInfo, resp string, isBinaryData bool) {
+func ValidateResHttp(t testing.TB, log *zap.Logger, testInfo api.PKTestInfo, resp string, isBinaryData bool) {
 	t.Helper()
 	for i := 0; i < len(testInfo.RespKVs); i++ {
 		key := string(testInfo.RespKVs[i].(string))
@@ -112,13 +112,14 @@ func ValidateResHttp(t testing.TB, testInfo api.PKTestInfo, resp string, isBinar
 			t.Fatalf("Key not found in the response. Key %s", key)
 		}
 
-		compareDataWithDB(t, testInfo.Db, testInfo.Table, testInfo.PkReq.Filters,
+		compareDataWithDB(t, log, testInfo.Db, testInfo.Table, testInfo.PkReq.Filters,
 			&key, jsonVal, isBinaryData)
 	}
 }
 
 func ValidateResGRPC(
 	t testing.TB,
+	log *zap.Logger,
 	testInfo api.PKTestInfo,
 	resp *api.PKReadResponseGRPC,
 	isBinaryData bool,
@@ -141,14 +142,14 @@ func ValidateResGRPC(
 			}
 		}
 
-		compareDataWithDB(t, testInfo.Db, testInfo.Table, testInfo.PkReq.Filters,
+		compareDataWithDB(t, log, testInfo.Db, testInfo.Table, testInfo.PkReq.Filters,
 			&key, val, isBinaryData)
 	}
 }
 
-func compareDataWithDB(t testing.TB, db string, table string, filters *[]api.Filter,
+func compareDataWithDB(t testing.TB, log *zap.Logger, db string, table string, filters *[]api.Filter,
 	colName *string, colDataFromRestServer *string, isBinaryData bool) {
-	dbVal, err := getColumnDataFromDB(t, db, table, filters, *colName, isBinaryData)
+	dbVal, err := getColumnDataFromDB(t, log, db, table, filters, *colName, isBinaryData)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
@@ -200,13 +201,14 @@ func getColumnDataFromJson(t testing.TB, colName string, pkResponse *api.PKReadR
 
 func getColumnDataFromDB(
 	t testing.TB,
+	log *zap.Logger,
 	db string,
 	table string,
 	filters *[]api.Filter,
 	col string,
 	isBinary bool,
 ) (*string, error) {
-	dbConn, err := testutils.CreateMySQLConnection()
+	dbConn, err := testutils.CreateMySQLConnection(log)
 	if err != nil {
 		t.Fatalf("failed to connect to db. %v", err)
 	}
@@ -343,7 +345,7 @@ func NewFilter(column *string, a interface{}) *[]api.Filter {
 
 func NewFiltersKVs(vals ...interface{}) *[]api.Filter {
 	if len(vals)%2 != 0 {
-		log.Panic("Expecting key value pairs")
+		panic("Expecting key value pairs")
 	}
 
 	filters := make([]api.Filter, len(vals)/2)
@@ -368,19 +370,19 @@ func RandString(n int) string {
 	return string(b)
 }
 
-func PkTest(t *testing.T, tests map[string]api.PKTestInfo, isBinaryData bool) {
+func PkTest(t *testing.T, log *zap.Logger, tests map[string]api.PKTestInfo, isBinaryData bool) {
 	for name, testInfo := range tests {
 		t.Run(name, func(t *testing.T) {
-			pkRESTTest(t, testInfo, isBinaryData)
-			pkGRPCTest(t, testInfo, isBinaryData)
+			pkRESTTest(t, log, testInfo, isBinaryData)
+			pkGRPCTest(t, log, testInfo, isBinaryData)
 		})
 	}
 }
 
-func pkGRPCTest(t *testing.T, testInfo api.PKTestInfo, isBinaryData bool) {
+func pkGRPCTest(t *testing.T, log *zap.Logger, testInfo api.PKTestInfo, isBinaryData bool) {
 	respCode, resp := sendGRPCPKReadRequest(t, testInfo)
 	if respCode == http.StatusOK {
-		ValidateResGRPC(t, testInfo, resp, isBinaryData)
+		ValidateResGRPC(t, log, testInfo, resp, isBinaryData)
 	}
 }
 
@@ -444,7 +446,7 @@ func GetStatusCodeFromError(t *testing.T, err error) int {
 	return common.GrpcCodeToHttpStatus(status.Code())
 }
 
-func pkRESTTest(t *testing.T, testInfo api.PKTestInfo, isBinaryData bool) {
+func pkRESTTest(t *testing.T, log *zap.Logger, testInfo api.PKTestInfo, isBinaryData bool) {
 	url := testutils.NewPKReadURL(testInfo.Db, testInfo.Table)
 	body, err := json.MarshalIndent(testInfo.PkReq, "", "\t")
 	if err != nil {
@@ -454,23 +456,23 @@ func pkRESTTest(t *testing.T, testInfo api.PKTestInfo, isBinaryData bool) {
 	httpCode, res := SendHttpRequest(t, config.PK_HTTP_VERB, url,
 		string(body), testInfo.HttpCode, testInfo.ErrMsgContains)
 	if httpCode == http.StatusOK {
-		ValidateResHttp(t, testInfo, res, isBinaryData)
+		ValidateResHttp(t, log, testInfo, res, isBinaryData)
 	}
 }
 
-func BatchTest(t *testing.T, tests map[string]api.BatchOperationTestInfo, isBinaryData bool) {
+func BatchTest(t *testing.T, log *zap.Logger, tests map[string]api.BatchOperationTestInfo, isBinaryData bool) {
 	for name, testInfo := range tests {
 		t.Run(name, func(t *testing.T) {
-			batchRESTTest(t, testInfo, isBinaryData)
-			batchGRPCTest(t, testInfo, isBinaryData)
+			batchRESTTest(t, log, testInfo, isBinaryData)
+			batchGRPCTest(t, log, testInfo, isBinaryData)
 		})
 	}
 }
 
-func batchGRPCTest(t *testing.T, testInfo api.BatchOperationTestInfo, isBinaryData bool) {
+func batchGRPCTest(t *testing.T, log *zap.Logger, testInfo api.BatchOperationTestInfo, isBinaryData bool) {
 	httpCode, res := sendGRPCBatchRequest(t, testInfo)
 	if httpCode == http.StatusOK {
-		validateBatchResponseGRPC(t, testInfo, res, isBinaryData)
+		validateBatchResponseGRPC(t, log, testInfo, res, isBinaryData)
 	}
 }
 
@@ -527,7 +529,7 @@ func sendGRPCBatchRequest(t *testing.T, testInfo api.BatchOperationTestInfo) (in
 	}
 }
 
-func batchRESTTest(t *testing.T, testInfo api.BatchOperationTestInfo, isBinaryData bool) {
+func batchRESTTest(t *testing.T, log *zap.Logger, testInfo api.BatchOperationTestInfo, isBinaryData bool) {
 	// batch operation
 	subOps := []api.BatchSubOp{}
 	for _, op := range testInfo.Operations {
@@ -543,20 +545,20 @@ func batchRESTTest(t *testing.T, testInfo api.BatchOperationTestInfo, isBinaryDa
 	httpCode, res := SendHttpRequest(t, config.BATCH_HTTP_VERB, url,
 		string(body), testInfo.HttpCode, testInfo.ErrMsgContains)
 	if httpCode == http.StatusOK {
-		validateBatchResponseHttp(t, testInfo, res, isBinaryData)
+		validateBatchResponseHttp(t, log, testInfo, res, isBinaryData)
 	}
 }
 
-func validateBatchResponseHttp(t testing.TB, testInfo api.BatchOperationTestInfo, resp string, isBinaryData bool) {
+func validateBatchResponseHttp(t testing.TB, log *zap.Logger, testInfo api.BatchOperationTestInfo, resp string, isBinaryData bool) {
 	t.Helper()
 	validateBatchResponseOpIdsNCodeHttp(t, testInfo, resp)
-	validateBatchResponseValuesHttp(t, testInfo, resp, isBinaryData)
+	validateBatchResponseValuesHttp(t, log, testInfo, resp, isBinaryData)
 }
 
-func validateBatchResponseGRPC(t testing.TB, testInfo api.BatchOperationTestInfo, resp *api.BatchResponseGRPC, isBinaryData bool) {
+func validateBatchResponseGRPC(t testing.TB, log *zap.Logger, testInfo api.BatchOperationTestInfo, resp *api.BatchResponseGRPC, isBinaryData bool) {
 	t.Helper()
 	validateBatchResponseOpIdsNCodeGRPC(t, testInfo, resp)
-	validateBatchResponseValuesGRPC(t, testInfo, resp, isBinaryData)
+	validateBatchResponseValuesGRPC(t, log, testInfo, resp, isBinaryData)
 }
 
 func validateBatchResponseOpIdsNCodeGRPC(t testing.TB, testInfo api.BatchOperationTestInfo, resp *api.BatchResponseGRPC) {
@@ -610,8 +612,13 @@ func validateBatchResponseOpIdsNCodeHttp(t testing.TB,
 	}
 }
 
-func validateBatchResponseValuesHttp(t testing.TB, testInfo api.BatchOperationTestInfo,
-	resp string, isBinaryData bool) {
+func validateBatchResponseValuesHttp(
+	t testing.TB,
+	log *zap.Logger,
+	testInfo api.BatchOperationTestInfo,
+	resp string,
+	isBinaryData bool,
+) {
 	var res api.BatchResponseJSON
 	err := json.Unmarshal([]byte(resp), &res)
 	if err != nil {
@@ -632,13 +639,19 @@ func validateBatchResponseValuesHttp(t testing.TB, testInfo api.BatchOperationTe
 				t.Fatalf("Key not found in the response. Key %s", key)
 			}
 
-			compareDataWithDB(t, operation.DB, operation.Table, operation.SubOperation.Body.Filters,
+			compareDataWithDB(t, log, operation.DB, operation.Table, operation.SubOperation.Body.Filters,
 				&key, val, isBinaryData)
 		}
 	}
 }
 
-func validateBatchResponseValuesGRPC(t testing.TB, testInfo api.BatchOperationTestInfo, resp *api.BatchResponseGRPC, isBinaryData bool) {
+func validateBatchResponseValuesGRPC(
+	t testing.TB,
+	log *zap.Logger,
+	testInfo api.BatchOperationTestInfo,
+	resp *api.BatchResponseGRPC,
+	isBinaryData bool,
+) {
 	for o := 0; o < len(testInfo.Operations); o++ {
 		if *(*resp.Result)[o].Code != http.StatusOK {
 			continue // data is null if the status is not OK
@@ -662,7 +675,7 @@ func validateBatchResponseValuesGRPC(t testing.TB, testInfo api.BatchOperationTe
 				}
 			}
 
-			compareDataWithDB(t, operation.DB, operation.Table, operation.SubOperation.Body.Filters,
+			compareDataWithDB(t, log, operation.DB, operation.Table, operation.SubOperation.Body.Filters,
 				&key, val, isBinaryData)
 		}
 	}

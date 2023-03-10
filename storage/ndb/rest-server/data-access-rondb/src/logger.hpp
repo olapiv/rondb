@@ -32,22 +32,8 @@
 #define DebugLevel 5
 #define TraceLevel 6
 
-static Callbacks my_cb_fns;
-
-inline void setLogCallBackFns(const Callbacks cbs) {
-  my_cb_fns = cbs;
-}
-
 inline void log(const int level, const char *msg) {
-  if (my_cb_fns.logger != nullptr) {
-    RS_LOG_MSG log_msg;
-    log_msg.level = level;
-    strncpy(log_msg.message, msg, RS_LOG_MSG_LEN - 1);
-    log_msg.message[RS_LOG_MSG_LEN - 1] = 0;
-    my_cb_fns.logger(log_msg);
-  } else {
-    std::cout << msg << std::endl;
-  }
+  std::cout << "Log Level: " + std::to_string(level) + "; Message: " + msg << std::endl;
 }
 
 inline void PANIC(const char *msg) {

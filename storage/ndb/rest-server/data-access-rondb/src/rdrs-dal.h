@@ -104,20 +104,6 @@ RS_Status pk_batch_read(unsigned int no_req, RS_Buffer *req_buffs, RS_Buffer *re
  */
 RS_Status get_rondb_stats(RonDB_Stats *stats);
 
-/**
- * Call back function for log messages
- */
-typedef void (*LogCallBackFn)(RS_LOG_MSG msg);
-
-typedef struct {
-  LogCallBackFn logger;
-} Callbacks;
-
-/**
- * Register call back function
- */
-void register_callbacks(Callbacks cbs);
-
 #endif
 
 #ifdef __cplusplus

@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
-	"hopsworks.ai/rdrs/internal/log"
+	"go.uber.org/zap"
 	"hopsworks.ai/rdrs/resources/testdbs"
 )
 
 func CreateDatabases(
+	log *zap.Logger,
 	registerAsHopsworksProjects bool,
 	dbNames ...string,
 ) (err error, cleanupDbs func()) {
@@ -21,7 +22,7 @@ func CreateDatabases(
 	}
 	cleanupDbs = func() {}
 
-	dbConn, err := CreateMySQLConnection()
+	dbConn, err := CreateMySQLConnection(log)
 	if err != nil {
 		return
 	}
@@ -32,35 +33,35 @@ func CreateDatabases(
 		return func() {
 			// We need a new DB connection since this might be called after the
 			// initial connection is closed.
-			err = runQueriesWithConnection(dropDatabases)
+			err = runQueriesWithConnection(log, dropDatabases)
 			if err != nil {
-				log.Errorf("failed cleaning up databases; error: %v", err)
+				log.Sugar().Errorf("failed cleaning up databases; error: %v", err)
 			}
 		}
 	}
 	for db, createSchema := range createSchemata {
-		err = runQueries(createSchema, dbConn)
+		err = runQueries(log, createSchema, dbConn)
 		if err != nil {
 			cleanupDbsWrapper(dropDatabases)()
 			err = fmt.Errorf("failed running createSchema for db '%s'; error: %w", db, err)
 			return err, func() {}
 		}
-		log.Debugf("successfully ran all queries to instantiate db '%s'", db)
+		log.Sugar().Debugf("successfully ran all queries to instantiate db '%s'", db)
 		dropDatabases += fmt.Sprintf("DROP DATABASE %s;\n", db)
 	}
 	return nil, cleanupDbsWrapper(dropDatabases)
 }
 
-func runQueriesWithConnection(sqlQueries string) error {
-	dbConn, err := CreateMySQLConnection()
+func runQueriesWithConnection(log *zap.Logger, sqlQueries string) error {
+	dbConn, err := CreateMySQLConnection(log)
 	if err != nil {
 		return err
 	}
 	defer dbConn.Close()
-	return runQueries(sqlQueries, dbConn)
+	return runQueries(log, sqlQueries, dbConn)
 }
 
-func runQueries(sqlQueries string, dbConnection *sql.DB) error {
+func runQueries(log *zap.Logger, sqlQueries string, dbConnection *sql.DB) error {
 	if sqlQueries == "" {
 		return nil
 	}
@@ -73,7 +74,7 @@ func runQueries(sqlQueries string, dbConnection *sql.DB) error {
 
 	for _, query := range splitQueries {
 		query := strings.TrimSpace(query)
-		log.Debugf("running query: \n%s", query)
+		log.Sugar().Debugf("running query: \n%s", query)
 		_, err := dbConnection.Exec(query)
 		if err != nil {
 			return fmt.Errorf("failed to run SQL query '%s'; error: %v", query, err)

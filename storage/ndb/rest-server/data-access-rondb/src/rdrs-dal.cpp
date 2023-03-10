@@ -217,10 +217,3 @@ int GetAvailableAPINode(const char *connection_string) {
   free(ret);
   return -1;
 }
-
-/**
- * Register callbacks
- */
-void register_callbacks(Callbacks cbs) {
-  setLogCallBackFns(cbs);
-}

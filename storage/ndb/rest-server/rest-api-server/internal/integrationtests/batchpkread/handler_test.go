@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"testing"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 	"hopsworks.ai/rdrs/internal/config"
 	"hopsworks.ai/rdrs/internal/integrationtests"
 	"hopsworks.ai/rdrs/internal/testutils"
@@ -29,6 +31,7 @@ import (
 )
 
 func TestBatchSimple(t *testing.T) {
+	log := zaptest.NewLogger(t)
 	tests := map[string]api.BatchOperationTestInfo{
 		"simple1": { // single operation batch
 			HttpCode: http.StatusOK,
@@ -205,10 +208,12 @@ func TestBatchSimple(t *testing.T) {
 			ErrMsgContains: "",
 		},
 	}
-	integrationtests.BatchTest(t, tests, false)
+	integrationtests.BatchTest(t, log, tests, false)
 }
 
 func TestBatchDate(t *testing.T) {
+	log := zaptest.NewLogger(t)
+
 	tests := map[string]api.BatchOperationTestInfo{
 		"date": {
 			HttpCode: http.StatusOK,
@@ -228,10 +233,12 @@ func TestBatchDate(t *testing.T) {
 			},
 		},
 	}
-	integrationtests.BatchTest(t, tests, false)
+	integrationtests.BatchTest(t, log, tests, false)
 }
 
 func TestBatchDateTime(t *testing.T) {
+	log := zaptest.NewLogger(t)
+
 	tests := map[string]api.BatchOperationTestInfo{
 		"date": {
 			HttpCode: http.StatusOK,
@@ -265,10 +272,12 @@ func TestBatchDateTime(t *testing.T) {
 			ErrMsgContains: "",
 		},
 	}
-	integrationtests.BatchTest(t, tests, false)
+	integrationtests.BatchTest(t, log, tests, false)
 }
 
 func TestBatchTime(t *testing.T) {
+	log := zaptest.NewLogger(t)
+
 	tests := map[string]api.BatchOperationTestInfo{
 		"date": {
 			HttpCode: http.StatusOK,
@@ -300,7 +309,7 @@ func TestBatchTime(t *testing.T) {
 			ErrMsgContains: "",
 		},
 	}
-	integrationtests.BatchTest(t, tests, false)
+	integrationtests.BatchTest(t, log, tests, false)
 }
 
 func createSubOperation(t *testing.T, table string, database string, pk string, expectedStatus int) api.BatchSubOperationTestInfo {
@@ -323,30 +332,36 @@ func createSubOperation(t *testing.T, table string, database string, pk string, 
 }
 
 func TestBatchArrayTableChar(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB012, false, 100, true)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB012, false, 100, true)
 }
 
 func TestBatchArrayTableVarchar(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB014, false, 50, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB014, false, 50, false)
 }
 
 func TestBatchArrayTableLongVarchar(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB015, false, 256, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB015, false, 256, false)
 }
 
 func TestBatchArrayTableBinary(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB016, true, 100, true)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB016, true, 100, true)
 }
 
 func TestBatchArrayTableVarbinary(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB017, true, 100, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB017, true, 100, false)
 }
 
 func TestBatchArrayTableLongVarbinary(t *testing.T) {
-	ArrayColumnBatchTest(t, "table1", testdbs.DB018, true, 256, false)
+	log := zaptest.NewLogger(t)
+	ArrayColumnBatchTest(t, log, "table1", testdbs.DB018, true, 256, false)
 }
 
-func ArrayColumnBatchTest(t *testing.T, table string, database string, isBinary bool, colWidth int, padding bool) {
+func ArrayColumnBatchTest(t *testing.T, log *zap.Logger, table string, database string, isBinary bool, colWidth int, padding bool) {
 	tests := map[string]api.BatchOperationTestInfo{
 		"simple1": { // bigger batch of array column table
 			HttpCode: http.StatusOK,
@@ -364,13 +379,15 @@ func ArrayColumnBatchTest(t *testing.T, table string, database string, isBinary 
 		},
 	}
 
-	integrationtests.BatchTest(t, tests, isBinary)
+	integrationtests.BatchTest(t, log, tests, isBinary)
 }
 
 /*
  A bad sub operation fails the entire batch
 */
 func TestBatchBadSubOp(t *testing.T) {
+	log := zaptest.NewLogger(t)
+
 	table := "table1"
 	database := testdbs.DB018
 	isBinary := true
@@ -392,7 +409,7 @@ func TestBatchBadSubOp(t *testing.T) {
 		},
 	}
 
-	integrationtests.BatchTest(t, tests, isBinary)
+	integrationtests.BatchTest(t, log, tests, isBinary)
 }
 
 func arrayColumnBatchTestSubOp(t *testing.T, table string, database string, isBinary bool, colWidth int, padding bool, pk string, expectedStatus int) api.BatchSubOperationTestInfo {
