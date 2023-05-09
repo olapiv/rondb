@@ -5,3 +5,4 @@ set -e
 ./mtr --suite=ndbcluster
 ./mtr --suite=ndb_rpl ndb_rpl_basic
 ./mtr --suite=innodb innodb-index
+./mtr --suite=rdrs
