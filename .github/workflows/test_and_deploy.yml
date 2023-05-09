@@ -1,0 +1,25 @@
+name: Building Tarball
+on:
+  push:
+
+jobs:
+  create-tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build and run Docker Compose cluster with benchmarking for RONDB_VERSION_LTS
+        run: |
+          BUILD_CORES=$(nproc)
+          BUILDKIT_ENABLED=1 docker build . \
+            -f Dockerfile.ubuntu22 \
+            --target get-package-all \
+            --output . \
+            --build-arg BUILD_THREADS=$BUILD_CORES \
+            --build-arg RELEASE_TARBALL=1
+
+      - name: Archive tarball
+        uses: actions/upload-artifact@v3
+        with:
+          name: rondb-21.04.13-linux-glibc2.17-x86_64.tar.gz
+          path: ./rondb-21.04.13-linux-glibc2.17-x86_64.tar.gz
