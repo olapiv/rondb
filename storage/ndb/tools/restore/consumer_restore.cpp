@@ -4115,7 +4115,7 @@ void BackupRestore::cback(int result, restore_callback_t *cb)
       {
         restoreLogger.log_error("Restore: Failed to restore data due to an "
                                 "unrecoverable error. Will continue due to "
-                                "--continue-on-data-errors.");
+                                "--continue-on-data-errors being set.");
       }
       else
       {
@@ -4932,7 +4932,8 @@ void BackupRestore::cback_logentry(int result, restore_callback_t *cb)
       {
         restoreLogger.log_error("Restore: Failed to restore data from a log "
                                 "entry due to an unrecoverable error. Will "
-                                "continue due to  --continue-on-data-errors.");
+                                "continue due to --continue-on-data-errors "
+                                "being set.");
       }
       else
       {
