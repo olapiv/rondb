@@ -4086,6 +4086,32 @@ bool BackupRestore::isMissingTable(const TableS& table)
   return ((tab == NULL) && (dict->getNdbError().code == 723));
 }
 
+void BackupRestore::logErrorWithTuple(const char* prefix, TupleS const *tup)
+{
+  NdbMutex_Lock(restoreLogger.m_mutex);
+  ndberr << prefix << tup->getTable()->getTableName() << " ";
+  // We could do `ndberr << *tup`, but that will only print values. We want attribute names as well.
+  int size = tup->getNoOfAttributes();
+  for (int i = 0; i < size; i++)
+  {
+    AttributeData * attr_data = tup->getData(i);
+    AttributeDesc * attr_desc = tup->getDesc(i);
+    const AttributeS attr = {attr_desc, *attr_data};
+    ndberr << attr.Desc->m_column->getName() << "=" << attr;
+    if (i < (size - 1))
+      ndberr << ", ";
+  }
+  ndberr << "\n";
+  NdbMutex_Unlock(restoreLogger.m_mutex);
+}
+
+void BackupRestore::logErrorWithLogEntry(const char* prefix, LogEntry const *le)
+{
+  NdbMutex_Lock(restoreLogger.m_mutex);
+  ndberr << prefix << *le << "\n";
+  NdbMutex_Unlock(restoreLogger.m_mutex);
+}
+
 void BackupRestore::cback(int result, restore_callback_t *cb)
 {
 #ifdef ERROR_INSERT
@@ -4116,6 +4142,7 @@ void BackupRestore::cback(int result, restore_callback_t *cb)
         restoreLogger.log_error("Restore: Failed to restore data due to an "
                                 "unrecoverable error. Will continue due to "
                                 "--continue-on-data-errors being set.");
+        logErrorWithTuple("The tuple that failed to restore is: ", &cb->tup);
       }
       else
       {
@@ -4123,6 +4150,7 @@ void BackupRestore::cback(int result, restore_callback_t *cb)
                                 "unrecoverable error. You could provide "
                                 "--continue-on-data-errors to not give up at "
                                 "this point. Exiting...");
+        logErrorWithTuple("The tuple that failed to restore is: ", &cb->tup);
         set_fatal_error(true);
       }
       return;
@@ -4934,6 +4962,7 @@ void BackupRestore::cback_logentry(int result, restore_callback_t *cb)
                                 "entry due to an unrecoverable error. Will "
                                 "continue due to --continue-on-data-errors "
                                 "being set.");
+        logErrorWithLogEntry("The log entry that failed to restore is: ", cb->le);
       }
       else
       {
@@ -4941,6 +4970,7 @@ void BackupRestore::cback_logentry(int result, restore_callback_t *cb)
                                 "entry due to an unrecoverable error. You "
                                 "could provide --continue-on-data-errors to "
                                 "not give up at this point. Exiting...");
+        logErrorWithLogEntry("The log entry that failed to restore is: ", cb->le);
         set_fatal_error(true);
       }
       return;
