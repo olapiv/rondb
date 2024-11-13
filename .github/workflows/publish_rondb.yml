@@ -11,6 +11,10 @@ on:
       - "21.04.[0-9]+"
       - "22.10.[0-9]+"
       - "24.10.[0-9]+"
+    tags:
+      - "rondb-21.04.[0-9]+"
+      - "rondb-22.10.[0-9]+"
+      - "rondb-24.10.[0-9]+"
 
 # This is important because the jobs are expensive and we don't want to wait a lot of time.
 # This cancel-in-progress only works per branch,  if a previous commit launched a job, a
@@ -35,6 +39,20 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+
+      - name: Extract Git tag
+        if: startsWith(github.ref, 'refs/tags/rondb-')
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/rondb-}" >> $GITHUB_ENV
+
+      - name: Verify MYSQL_VERSION
+        if: startsWith(github.ref, 'refs/tags/rondb-')
+        shell: bash
+        run: |
+          MYSQL_VERSION=$(cat ./MYSQL_VERSION)
+          if [ "$MYSQL_VERSION" != "$TAG_NAME" ]; then
+            echo "Error: MYSQL_VERSION ($MYSQL_VERSION) does not match the tag version ($TAG_NAME)"
+            exit 1
+          fi
 
       - name: Set up SSH
         run: |
@@ -96,10 +114,11 @@ jobs:
 
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             # Manual dispatches will only be dev tarballs
-            echo "This workflow was triggered via a dispatch."
             user_code_path="/opt/repository/master/rondb-dev"
           else
-            echo "This workflow was not triggered by a dispatch."
+            # We won't upload to repo.hops.works/master directly;
+            # This is handled by a cron job that checks whether the
+            # tarball already exists first
             user_code_path="/home/$REPO_HOPSWORKS_USER/upload_area"
           fi
 
