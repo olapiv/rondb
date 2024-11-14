@@ -123,7 +123,7 @@ jobs:
             user_code_path="/home/$REPO_HOPSWORKS_USER/upload_area"
           fi
 
-          echo "Copying $tarball to $host_user:$user_code_path/"
-          scp ./$tarball $host_user:$user_code_path/
+          echo "Copying $tarball to $host_user:$user_code_path"
+          scp ./$tarball $host_user:$user_code_path
           # Delete the tarball after it has been uploaded
           rm -f $tarball
