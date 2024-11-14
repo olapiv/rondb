@@ -40,17 +40,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - run: cat ./MYSQL_VERSION
+
       - name: Extract Git tag
         if: startsWith(github.ref, 'refs/tags/rondb-')
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/rondb-}" >> $GITHUB_ENV
 
-      - name: Verify MYSQL_VERSION
+      - name: Verify RONDB_VERSION
         if: startsWith(github.ref, 'refs/tags/rondb-')
         shell: bash
         run: |
-          MYSQL_VERSION=$(cat ./MYSQL_VERSION)
-          if [ "$MYSQL_VERSION" != "$TAG_NAME" ]; then
-            echo "Error: MYSQL_VERSION ($MYSQL_VERSION) does not match the tag version ($TAG_NAME)"
+          source ./MYSQL_VERSION
+          RONDB_VERSION="$MYSQL_VERSION_MAJOR.$MYSQL_VERSION_MINOR.$MYSQL_VERSION_PATCH"
+          if [ "$RONDB_VERSION" != "$TAG_NAME" ]; then
+            echo "Error: RONDB_VERSION ($RONDB_VERSION) does not match the tag version ($TAG_NAME)"
             exit 1
           fi
 
@@ -71,8 +74,6 @@ jobs:
 
           # Add the host key to the known_hosts file if it is not already present
           grep -qxF "$REPO_PUBLIC_KEY" "$KNOWN_HOSTS_FILE" || echo "$REPO_PUBLIC_KEY" >> "$KNOWN_HOSTS_FILE"
-
-      - run: cat ./MYSQL_VERSION
 
       - name: Build RonDB Tarball
         run: |
